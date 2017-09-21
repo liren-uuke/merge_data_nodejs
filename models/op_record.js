@@ -48,6 +48,11 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(1024),
 			allowNull: false,
 			defaultValue: ''
+		},
+		institution_id: {
+			type: DataTypes.INTEGER(10),
+			allowNull: false,
+			defaultValue: '-1'
 		}
 	}, {
 		tableName: 'op_record',

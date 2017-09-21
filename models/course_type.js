@@ -37,6 +37,10 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.INTEGER(1),
 			allowNull: false,
 			defaultValue: '0'
+		},
+		institution_id: {
+			type: DataTypes.INTEGER(10),
+			allowNull: false
 		}
 	}, {
 		tableName: 'course_type',

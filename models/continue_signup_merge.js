@@ -1,22 +1,24 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('period', {
+	return sequelize.define('continue_signup_merge', {
 		id: {
 			type: DataTypes.INTEGER(10).UNSIGNED,
 			allowNull: false,
 			primaryKey: true,
 			autoIncrement: true
 		},
-		name: {
-			type: DataTypes.STRING(100),
-			allowNull: false,
-			defaultValue: ''
+		from_class_id: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false
 		},
-		is_del: {
-			type: DataTypes.INTEGER(4),
-			allowNull: false,
-			defaultValue: '0'
+		to_class_id: {
+			type: DataTypes.INTEGER(1),
+			allowNull: false
+		},
+		season: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false
 		},
 		create_time: {
 			type: DataTypes.TIME,
@@ -27,13 +29,9 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TIME,
 			allowNull: false,
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-		},
-		institution_id: {
-			type: DataTypes.INTEGER(10),
-			allowNull: false
 		}
 	}, {
-		tableName: 'period',
+		tableName: 'continue_signup_merge',
 		timestamps: false
 	});
 };

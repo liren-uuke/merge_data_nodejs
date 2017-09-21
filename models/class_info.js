@@ -153,6 +153,10 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: false,
 			defaultValue: '0'
 		},
+		link: {
+			type: DataTypes.TEXT,
+			allowNull: true
+		},
 		online_type: {
 			type: DataTypes.INTEGER(2),
 			allowNull: false,
@@ -214,6 +218,66 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.INTEGER(2),
 			allowNull: false,
 			defaultValue: '1'
+		},
+		grade_id: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		course_type_id: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		subject_id: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		year: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		season: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		trans_limit: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		continue_time_start: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: '0000-00-00 00:00:00'
+		},
+		continue_time_end: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: '0000-00-00 00:00:00'
+		},
+		trans_time_start: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: '0000-00-00 00:00:00'
+		},
+		trans_time_end: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: '0000-00-00 00:00:00'
+		},
+		all_time_start: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: '0000-00-00 00:00:00'
+		},
+		all_time_end: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: '0000-00-00 00:00:00'
 		}
 	}, {
 		tableName: 'class_info',

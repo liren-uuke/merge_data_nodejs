@@ -1,30 +1,49 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('class_type', {
+	return sequelize.define('student_coupon_obtained', {
 		id: {
-			type: DataTypes.INTEGER(11),
+			type: DataTypes.BIGINT,
 			allowNull: false,
 			primaryKey: true,
 			autoIncrement: true
 		},
-		open_code: {
-			type: DataTypes.STRING(20),
-			allowNull: false,
-			defaultValue: ''
-		},
-		name: {
-			type: DataTypes.STRING(100),
-			allowNull: false,
-			defaultValue: ''
-		},
-		course_type_id: {
+		coupon_id: {
 			type: DataTypes.INTEGER(11),
 			allowNull: false,
 			defaultValue: '0'
 		},
+		student_union_id: {
+			type: DataTypes.STRING(64),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		purchase_id: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		used_purchase_id: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
+		obtain_time: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+		},
+		expire_time: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+		},
+		use_time: {
+			type: DataTypes.TIME,
+			allowNull: true
+		},
 		is_del: {
-			type: DataTypes.INTEGER(2),
+			type: DataTypes.INTEGER(11),
 			allowNull: false,
 			defaultValue: '0'
 		},
@@ -37,19 +56,9 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TIME,
 			allowNull: false,
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-		},
-		show_seq: {
-			type: DataTypes.INTEGER(11),
-			allowNull: false,
-			defaultValue: '0'
-		},
-		institution_id: {
-			type: DataTypes.INTEGER(10),
-			allowNull: false,
-			defaultValue: '-1'
 		}
 	}, {
-		tableName: 'class_type',
+		tableName: 'student_coupon_obtained',
 		timestamps: false
 	});
 };

@@ -58,6 +58,11 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: false,
 			defaultValue: '0'
 		},
+		continue_from_course_id: {
+			type: DataTypes.INTEGER(11),
+			allowNull: false,
+			defaultValue: '0'
+		},
 		continue_time_start: {
 			type: DataTypes.TIME,
 			allowNull: false,
@@ -137,6 +142,11 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.INTEGER(11),
 			allowNull: true,
 			defaultValue: '0'
+		},
+		test: {
+			type: DataTypes.TIME,
+			allowNull: false,
+			defaultValue: '0000-00-00 00:00:00'
 		}
 	}, {
 		tableName: 'course',
