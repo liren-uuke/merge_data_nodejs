@@ -28,6 +28,16 @@ const models = [
   'student_account',
   'student_lesson',
   'student_lesson_sign',
+  'user',
+  'institution',
+  'institution_member',
+  'teacher',
+  'user_role',
+  'course_lesson',
+  'class_lesson',
+  'selected_playback',
+  'class_teacher',
+  
 ];
 
 models.forEach(function(model) {
