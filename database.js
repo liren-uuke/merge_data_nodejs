@@ -37,6 +37,7 @@ const models = [
   'class_lesson',
   'selected_playback',
   'class_teacher',
+  'student_weixin'
   
 ];
 
