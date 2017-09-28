@@ -62,6 +62,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
             begin_date: new Date(cls.beginDate * 1000),
             on_shelves_time: new Date(parseInt(cls.onShelvesDate.$numberLong)),
         },{transaction});
+        cls.erpClass = erpClass;
         let erpClassTeachers = erpUsers.filter(u=>cls.teacherIds.find(id=>id==u.dataValues.mongoId));
         
         //class_teacher
@@ -73,6 +74,8 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
             },{transaction});
         });
 
+        cls.classLessons = []];
+        
         //class_lesson
         for(let index = 0 ; index < cls.steps.length; index++){
             let step = cls.steps[index];
@@ -88,6 +91,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
                 playback_count: step.playbacks?step.playbacks.length:-1,
                 instituion_id: institutionId
             },{transaction});
+            cls.classLessons.push(erpLesson);
             if(step.playbacks){
                 //selected_playback
                 await async.each(step.playbacks,function(playback){
