@@ -36,15 +36,19 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     const {id, course_id} = erpClass.dataValues;
     
     //创建student_class
-    let sc = await database.student_class.findOrCreate({
+    let erpClassStudent = await database.class_student.findCreateFind({
       where:{class_id: id, course_id, student_id: student.studentId},
+      defaults:{class_id: id, course_id, student_id: student.studentId},
       transaction
     });
 
+    erpClassStudent = erpClassStudent[0];
+    let purchaseId = erpClassStudent.dataValues.purchase_id;
+    
     //创建订单purchase_info
-    if(sc.dataValues.purchase_id == 0){
-      let paytimeInt = parseInt(order.tradeTime.$numberLong);
-      let payTime = new Date(paytimeInt);
+    if(erpClassStudent.dataValues.purchase_id == 0){
+      let paytimeInt = order?parseInt(order.tradeTime.$numberLong):0;
+      let payTime = order?new Date(paytimeInt):new Date();
       let erpPurchaseInfo = await database.purchase_info.create({
         student_id: student.studentId,
         trade_no: order ? order.inTradeNo : '',
@@ -53,32 +57,52 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
         total_price:  order ? Math.round(order.price)*100 : 0,
         pay_time: payTime,
       },{transaction});
-      erpPurchaseInfo.dataValues.purchase_number = "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000;
-      erpPurchaseInfo.save();
-      sc.dataValues.purchase_id = erpPurchaseInfo.dataValues.id;
+      purchaseId = erpPurchaseInfo.dataValues.id;
+      await database.purchase_info.update(
+        { 
+          is_del : 0, 
+          purchase_id: purchaseId,
+          purchase_number: "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000
+        },
+        {
+          where:{id: erpPurchaseInfo.dataValues.id},
+          transaction
+        }
+      );
     }
-    sc.dataValues.is_del = 0;
-    sc.save({transaction});
 
+   
     //创建puchase_class
-    let puchaseClass = await database.purchase_class.findOrCreate({
+    let puchaseClass = await database.purchase_class.findCreateFind({
       where:{class_id: id, course_id, student_id: student.studentId},
+      defaults:{class_id: id, course_id, student_id: student.studentId},
       transaction
     });
-    puchaseClass.dataValues.purchase_id = sc.dataValues.purchase_id;
-    puchaseClass.dataValues.is_del = 0;
-    puchaseClass.save({transaction});
-
-    //创建class_lesson
-    for(let i = 0; i < cls.classLessons; i++){
-      let lesson = cls.classLessons[i];
-      let sl = await database.student_lesson.findOrCreate({
-        where:{class_id: id, course_id, student_id: student.studentId, lesson_id:lesson.dataValues.id},
+    await database.purchase_class.update(
+      { is_del : 0, purchase_id:purchaseId},
+      {
+        where:{id: puchaseClass[0].dataValues.id},
         transaction
-      });
-      sl.dataValues.is_del = 0;
-      sl.dataValues.purchase_id = sc.dataValues.purchase_id;
-      sl.save({transaction});
+      }
+    );
+
+    
+    //创建class_lesson
+    for(let i = 0; i < cls.classLessons.length; i++){
+      let lesson = cls.classLessons[i];
+      let sl = await database.student_lesson.findCreateFind({
+        where:{class_id: id, course_id, student_id: student.studentId, lesson_id:lesson.dataValues.id},
+        defaults:{class_id: id, course_id, student_id: student.studentId, lesson_id:lesson.dataValues.id},
+        
+        transaction
+      });      
+      await database.student_lesson.update(
+        { is_del : 0, purchase_id: purchaseId},
+        {
+          where:{id: sl[0].dataValues.id},
+          transaction
+        }
+      );
     }
   }
 }

@@ -8,7 +8,6 @@ const mergeStudentClasses = require('./merge_process/mergeStudentClasses')
 
 
 const exec = require('child_process').exec; 
-const WXROLE = 1007;
 function getCollection(name){
   var file=`./mongo_backups/${name}.json`;
   return JSON.parse(fs.readFileSync(file, 'utf-8'));
@@ -28,6 +27,8 @@ function mobileMap(mobile){
 }
 function processData(database){
   var f = async function () {
+    let stream = fs.createWriteStream('process.log');
+    
     let institutions = getCollection('institutions');
     let allUsers = getCollection('users');
     allUsers = allUsers.filter(u=>u.account.phone&&u.account.phone.length>0);
@@ -44,11 +45,14 @@ function processData(database){
     await database.sequelize.transaction(async function (t) {  
       await createStudents(allUsers, database, t);
     });
-
+    let studentSteam = fs.createWriteStream('mongo_backups/students2.json');
+    studentSteam.write(JSON.stringify(allUsers));
+    studentSteam.end("\n");
     await database.sequelize.transaction(async function (t) {  
       for(let index = 0 ; index < institutions.length; index++){
-          
         let institution = institutions[index];
+        let noticeText = institution.erpInstitution?'处理机构':'无此机构';
+        stream.write(`${noticeText} ${institution.name}\t==========================${index+1}/${institutions.length} \n`);
         if(!institution.erpInstitution){
           continue;
         }
@@ -61,7 +65,9 @@ function processData(database){
           let cls = classes[indexCls];
           let studentClassInstances = allStudentClassInstances.filter(sci=>sci.classId == cls._id);
           let orders = allOrders.filter(o=>o.classId == cls._id);
-          await mergeStudentClasses(cls, studentClassInstances, orders, allUsers, database, transaction);            
+          stream.write(`    班级报名 ${cls.className}=======${indexCls+1}/${classes.length} \n`);
+          
+          await mergeStudentClasses(cls, studentClassInstances, orders, allUsers, database, t);            
         }
       }
     });

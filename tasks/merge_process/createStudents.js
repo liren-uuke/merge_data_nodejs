@@ -20,7 +20,7 @@ async function createStudents(users, database, transaction){
                 password: user.account.passwd,
             }, {transaction});
         }
-        user.accountId = erpStudentAccount.dataValues.id;
+        user.studentId = erpStudentAccount.dataValues.id;
         
         let erpStudent = await database.student.findOne({
             where: {mobile: user.account.phone, system: 1} ,
@@ -54,9 +54,16 @@ async function createStudents(users, database, transaction){
                 wechat_key: 'ZHIMO',
             }, {transaction});
         }else{ 
-            erpstudentWeixin.dataValues.open_id =  user.wechatopenId;
-            erpstudentWeixin.dataValues.union_id =  user.unionid;
-            erpstudentWeixin.save({transaction})
+            await database.student_weixin.update(
+                {
+                    open_id: user.wechatopenId, 
+                    union_id: user.unionid
+                },
+                {
+                    where: {mobile: user.account.phone, wechat_key: 'ZHIMO'} ,
+                    transaction
+                }
+            )
         }
         
     };

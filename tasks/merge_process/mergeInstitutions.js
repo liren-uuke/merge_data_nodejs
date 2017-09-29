@@ -2,7 +2,8 @@ const fs = require('fs');
 var async = require('async');  
 const sequelize = require('sequelize');
 const _ = sequelize.Utils._;
-  
+const WXROLE = 1007;
+
   async function createInstitution(institution, user, erpUser, database, transaction){
     let erpInstitution = {};
     let erpInstObject = {

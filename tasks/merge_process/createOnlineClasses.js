@@ -74,7 +74,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
             },{transaction});
         });
 
-        cls.classLessons = []];
+        cls.classLessons = [];
         
         //class_lesson
         for(let index = 0 ; index < cls.steps.length; index++){

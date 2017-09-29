@@ -37,7 +37,10 @@ const models = [
   'class_lesson',
   'selected_playback',
   'class_teacher',
-  'student_weixin'
+  'student_weixin',
+  'class_student',
+  'purchase_class',
+  'purchase_info'
   
 ];
 
