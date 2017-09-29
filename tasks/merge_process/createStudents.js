@@ -7,7 +7,6 @@ async function createStudents(users, database, transaction){
         let user = users[i];
         if(!user.account.phone){
             console.log("跳过未注册用户");
-            console.log(user);
             continue;
         }
         let erpStudentAccount = await database.student_account.findOne({

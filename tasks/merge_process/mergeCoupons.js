@@ -41,8 +41,7 @@ async function mergeCoupons(classes, institutions, orders, students,            
     let classId = 0;
     if(coupon.classId != "all"){
       let cls = classes.find(c=>c._id===coupon.classId);
-      console.log(cls);
-      classId = cls.erpClass.dataValues.id;
+      classId = cls.erpClass.dataValues?cls.erpClass.dataValues.id:cls.erpClass.id;
     }
     await database.coupon.update(
       {
@@ -72,25 +71,29 @@ async function mergeCoupons(classes, institutions, orders, students,            
     let order = orders.find(o=>o.outTradeNo===sharedCoupon.orderOutTradeNo);
     let institution = institutions.find(ins=>ins._id==coupon.institutionId);
     let erpInstitution = institution.erpInstitution;
+    
     if(!erpInstitution){
       continue;
     }
     let erpPurchaseInfo = order.erpPurchaseInfo;
+    if(erpPurchaseInfo.dataValues){
+      erpPurchaseInfo = erpPurchaseInfo.dataValues;
+    }
     erpSharedCoupon = await database.student_coupon_shared.findCreateFind({
-      where: {purchase_id: erpPurchaseInfo.dataValues.id,coupon_id: coupon.couponId},
-      defaults: {coupon_id: coupon.couponId, purchase_id:erpPurchaseInfo.dataValues.id},
+      where: {purchase_id: erpPurchaseInfo.id,coupon_id: coupon.couponId},
+      defaults: {coupon_id: coupon.couponId, purchase_id:erpPurchaseInfo.id},
       transaction
     });
     erpSharedCoupon = erpSharedCoupon[0];
 
-    await database.erpSharedCoupon.update(
+    await database.student_coupon_shared.update(
       {
         coupon_id: coupon.couponId, 
-        purchase_id: erpPurchaseInfo.dataValues.id,
-        create_time: new Date(parseInt(coupon.shareTime.$numberLong)),
+        purchase_id: erpPurchaseInfo.id,
+        create_time: new Date(parseInt(sharedCoupon.shareTime.$numberLong)),
       },
       {
-        where:{id: erpSharedCoupon.dataValues.id},
+        where:{id: erpSharedCoupon.id},
         transaction
       }
     );    
@@ -103,30 +106,51 @@ async function mergeCoupons(classes, institutions, orders, students,            
     let useForOrder = orders.find(o=>o.outTradeNo===obtainedCoupon.useForOrderOutTradeNo);
     
     let institution = institutions.find(ins=>ins._id==coupon.institutionId);
+    let erpInstitution = institution.erpInstitution;
+    
     if(!erpInstitution){
       continue;
     }
-    let erpInstitution = institution.erpInstitution;
-    let erpPurchaseInfo = order.erpPurchaseInfo;
-    let obtainedStudent = students.find(s=>s._id == coupon.obtainerUserId);
-    let data=  {
-      purchase_id: erpPurchaseInfo.dataValues.id,
-      coupon_id: coupon.couponId,
-      student_union_id: students.account.unionid,
+    let classId = 0;
+    if(coupon.classId != "all"){
+      let cls = classes.find(c=>c._id===obtainedCoupon.classId);
+      classId = cls.erpClass.dataValues?cls.erpClass.dataValues.id:cls.erpClass.id;
     }
-    erpObtainedCoupon = await database.student_coupon_obtained.findCreateFind({
+    let erpPurchaseInfo = order.erpPurchaseInfo;
+    if(erpPurchaseInfo.dataValues){
+      erpPurchaseInfo = erpPurchaseInfo.dataValues;
+    }
+
+    let usedErpPurchaseInfo = useForOrder?useForOrder.erpPurchaseInfo:null;
+    if(usedErpPurchaseInfo&&usedErpPurchaseInfo.dataValues){
+      usedErpPurchaseInfo = usedErpPurchaseInfo.dataValues;
+    }
+
+    console.log(obtainedCoupon);
+    
+    let obtainedStudent = students.find(s=> s._id === obtainedCoupon.obtainerUserId);
+    let data=  {
+      purchase_id: erpPurchaseInfo.id,
+      coupon_id: coupon.couponId,
+      student_union_id: obtainedStudent.unionid,
+    }
+    let erpObtainedCoupon = await database.student_coupon_obtained.findCreateFind({
       where: data,
       defaults: data,
       transaction
     });
     erpObtainedCoupon = erpObtainedCoupon[0];
-
+    
     await database.student_coupon_obtained.update(
       {
-        obtain_time: new Date(parseInt(obtainedCoupon.shareTime.$numberLong)),
+        obtain_time: new Date(parseInt(obtainedCoupon.obtainTime.$numberLong)),
         expire_time: new Date(parseInt(obtainedCoupon.expireTime.$numberLong)),
-        use_time: coupon.useTime?new Date(parseInt(coupon.useTime.$numberLong)):null,
-        used_purchase_id: useForOrder.erpPurchaseInfo.dataValues.id,
+        use_time: coupon.useTime?new Date(parseInt(obtainedCoupon.useTime.$numberLong)):null,
+        used_purchase_id: usedErpPurchaseInfo?usedErpPurchaseInfo.id : 0,
+        money: obtainedCoupon.money*100,
+        title: obtainedCoupon.title,
+        institution_id: erpInstitution.dataValues.id,
+
       },
       {
         where:{id: erpObtainedCoupon.dataValues.id},

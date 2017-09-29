@@ -34,8 +34,8 @@ function processData(database){
     
     let institutions = getCollection(!useClassCache?'institutions':'institutions2');
     let allUsers = getCollection(!useCache?'users':'students2');
-    allUsers = allUsers.filter(u=>u.account.phone&&u.account.phone.length>0);
-    allUsers.forEach(u=>u.account.phone = mobileMap(u.account.phone ));
+    //allUsers = allUsers.filter(u=>u.account.phone&&u.account.phone.length>0);
+    allUsers.forEach(u=>u.account.phone = u.account.phone?mobileMap(u.account.phone):null);
     let allClasses = getCollection(!useClassCache?'classes':'classes2');
     let allcourses = getCollection('courses');
     let allStudentClassInstances = getCollection('studentClassInstances');
@@ -94,10 +94,13 @@ function processData(database){
       }
      
 
+
+    });
+  
+    await database.sequelize.transaction(async function (t) {  
       await mergeCoupons(allClasses,institutions, allOrders, allUsers,
         shareCouponInstances, shareCouponInstanceObtains, coupons, database, t);
     });
-  
 
   };
   return f();
