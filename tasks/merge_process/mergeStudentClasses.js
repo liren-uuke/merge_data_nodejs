@@ -57,12 +57,15 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
         total_price:  order ? Math.round(order.price)*100 : 0,
         pay_time: payTime,
       },{transaction});
+      erpPurchaseInfo.dataValues.purchase_number = "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000;
       purchaseId = erpPurchaseInfo.dataValues.id;
+      if(order){
+        order.erpPurchaseInfo = erpPurchaseInfo;
+      }
       await database.purchase_info.update(
         { 
           is_del : 0, 
-          purchase_id: purchaseId,
-          purchase_number: "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000
+          purchase_number: erpPurchaseInfo.dataValues.purchase_number
         },
         {
           where:{id: erpPurchaseInfo.dataValues.id},

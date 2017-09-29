@@ -40,7 +40,10 @@ const models = [
   'student_weixin',
   'class_student',
   'purchase_class',
-  'purchase_info'
+  'purchase_info',
+  'student_coupon_obtained',
+  'coupon',
+  'student_coupon_shared'
   
 ];
 
