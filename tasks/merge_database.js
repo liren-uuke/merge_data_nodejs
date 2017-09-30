@@ -6,6 +6,8 @@ const createStudents = require('./merge_process/createStudents')
 const mergeInstitutions = require('./merge_process/mergeInstitutions')
 const mergeStudentClasses = require('./merge_process/mergeStudentClasses')
 const mergeCoupons = require('./merge_process/mergeCoupons')
+const createOfflineClasses = require('./merge_process/createOfflineClasses')
+
 
 const useCache= true;
 const useClassCache= true;
@@ -43,11 +45,24 @@ function processData(database){
     let coupons = getCollection('coupons');
     let shareCouponInstanceObtains = getCollection('shareCouponInstanceObtains');
     let shareCouponInstances = getCollection('shareCouponInstances');
+    let offlineCourses = getCollection('offlineCourses');
     
     await database.sequelize.transaction(async function (transaction) {  
       await mergeInstitutions(institutions,allUsers,database,transaction );
     });
 
+    //线下班级
+    await database.sequelize.transaction(async function (t) {  
+      for(let index = 0 ; index < institutions.length; index++){
+        let institution = institutions[index];
+        if(!institution.erpInstitution){
+          continue;
+        }
+        await createOfflineClasses(institution.erpInstitution.dataValues.id, offlineCourses,database, t);
+      }
+      
+    });
+    //创建学生
     if(!useCache){
       await database.sequelize.transaction(async function (t) {  
         await createStudents(allUsers, database, t);
@@ -57,7 +72,7 @@ function processData(database){
       studentSteam.end("\n");
     }
 
-
+    //创建在线课程
     await database.sequelize.transaction(async function (t) {  
       if(!useClassCache){
         for(let index = 0 ; index < institutions.length; index++){
