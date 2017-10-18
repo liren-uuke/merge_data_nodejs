@@ -76,6 +76,9 @@ async function mergeCoupons(classes, institutions, orders, students,            
       continue;
     }
     let erpPurchaseInfo = order.erpPurchaseInfo;
+    if(!erpPurchaseInfo){
+      continue;
+    }
     if(erpPurchaseInfo.dataValues){
       erpPurchaseInfo = erpPurchaseInfo.dataValues;
     }
@@ -117,6 +120,9 @@ async function mergeCoupons(classes, institutions, orders, students,            
       classId = cls.erpClass.dataValues?cls.erpClass.dataValues.id:cls.erpClass.id;
     }
     let erpPurchaseInfo = order.erpPurchaseInfo;
+    if(!erpPurchaseInfo){
+      continue;
+    }
     if(erpPurchaseInfo.dataValues){
       erpPurchaseInfo = erpPurchaseInfo.dataValues;
     }

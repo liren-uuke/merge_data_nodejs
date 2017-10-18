@@ -43,7 +43,10 @@ const models = [
   'purchase_info',
   'student_coupon_obtained',
   'coupon',
-  'student_coupon_shared'
+  'student_coupon_shared',
+  'teacher_qualification',
+  'teacher_grade',
+  'teacher_subject'
   
 ];
 

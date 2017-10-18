@@ -4,7 +4,7 @@ const sequelize = require('sequelize');
 const _ = sequelize.Utils._;
 const WXROLE = 1007;
 async function creatRole(institutionId, userId, database, transaction){
-  let data = {institution_id: institutionId, user_id: userId, role_id: WXROLE};
+  let data = {/*institution_id: institutionId, */user_id: userId, role_id: WXROLE};
   let instituonMember = await database.user_role.findCreateFind({
     where: data,
     defaults: data,
@@ -76,9 +76,35 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         transaction
       });
       if(!erpUser){
+        let name = user.realname || user.name;
+        erpUser = await database.user.create({
+            mobile, 
+            name, 
+            password:'14e1b600b1fd579f47433b88e8d85291'
+        },{transaction});
+        
+        await database.teacher.create({
+          user_id: erpUser.dataValues.id, 
+          nick_name:name, 
+          open_code: 'wx' + erpUser.dataValues.id,
+        },{transaction});
+
+        await database.teacher_qualification.create({
+          user_id: erpUser.dataValues.id, 
+          description:user.intro, 
+        },{transaction});
+
+        await database.teacher_grade.create({
+          user_id: erpUser.dataValues.id, 
+          grade_id:1, 
+        },{transaction});
+
+        await database.teacher_subject.create({
+          user_id: erpUser.dataValues.id, 
+          subject_id: 1, 
+        },{transaction});
         stream.write(`${user.name}(${user.realname}),${user.account.phone},${institution.name}\n`)
         console.log(`${user.account.phone}erp中无用户${JSON.stringify(user)}${JSON.stringify(institution)}`);
-        continue;
       }
       institution.erpUsers.push(erpUser);
       const {id} = erpUser.dataValues;

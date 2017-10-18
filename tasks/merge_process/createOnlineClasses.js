@@ -5,7 +5,8 @@ const _ = sequelize.Utils._;
 async function createOnlineClasses(institutionId, openCode, teachers, classes, courses, database,transaction){
     let mobiles = teachers.map(te=>te.account.phone);    
     let erpUsers = await database.user.findAll({
-        where: {mobile : { in : mobiles }}  
+        where: {mobile : { in : mobiles }},
+        transaction  
     });
     erpUsers.forEach(u=>{
         let teacher = teachers.find(te=>te.account.phone == u.dataValues.mobile);
@@ -80,6 +81,9 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
         for(let index = 0 ; index < cls.steps.length; index++){
             let step = cls.steps[index];
             let lessonTeacher = erpUsers.find(u=>u.dataValues.mongoId == step.teacherId);
+            if(!lessonTeacher){
+                lessonTeacher = erpUsers[0];
+            }
             let erpLesson = await database.class_lesson.create({
                 number:index + 1,
                 class_id: erpClass.dataValues.id,

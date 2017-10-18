@@ -1,6 +1,6 @@
 module.exports = {
   sql_server: {
-    host: "localhost",
+    host: "lkl.data",
     port: 3306,
     dialect: "mysql",
     username: process.env.DB_USER,

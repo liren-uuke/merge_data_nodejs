@@ -9,8 +9,8 @@ const mergeCoupons = require('./merge_process/mergeCoupons')
 const createOfflineClasses = require('./merge_process/createOfflineClasses')
 
 
-const useCache= true;
-const useClassCache= true;
+const useCache=false;
+const useClassCache=false;
 
 const exec = require('child_process').exec; 
 function getCollection(name){
@@ -47,33 +47,29 @@ function processData(database){
     let shareCouponInstances = getCollection('shareCouponInstances');
     let offlineCourses = getCollection('offlineCourses');
     
-    await database.sequelize.transaction(async function (transaction) {  
-      await mergeInstitutions(institutions,allUsers,database,transaction );
-    });
-
-    //线下班级
     await database.sequelize.transaction(async function (t) {  
+
+      await mergeInstitutions(institutions,allUsers,database,t);
+    
       for(let index = 0 ; index < institutions.length; index++){
         let institution = institutions[index];
         if(!institution.erpInstitution){
           continue;
         }
-        await createOfflineClasses(institution.erpInstitution.dataValues.id, offlineCourses,database, t);
+        let offlines = offlineCourses.filter(o=>o.institutionId==institution._id);
+        await createOfflineClasses(institution.erpInstitution.dataValues.id, offlines,database, t);
       }
-      
-    });
+  
+  
     //创建学生
-    if(!useCache){
-      await database.sequelize.transaction(async function (t) {  
+      if(!useCache){
         await createStudents(allUsers, database, t);
-      });
-      let studentSteam = fs.createWriteStream('mongo_backups/students2.json');
-      studentSteam.write(JSON.stringify(allUsers));
-      studentSteam.end("\n");
-    }
+        let studentSteam = fs.createWriteStream('mongo_backups/students2.json');
+        studentSteam.write(JSON.stringify(allUsers));
+        studentSteam.end("\n");
+      }
 
     //创建在线课程
-    await database.sequelize.transaction(async function (t) {  
       if(!useClassCache){
         for(let index = 0 ; index < institutions.length; index++){
           let institution = institutions[index];
@@ -95,28 +91,21 @@ function processData(database){
             await mergeStudentClasses(cls, studentClassInstances, orders, allUsers, database, t);            
           }
         }
-  
+
         let classesStream = fs.createWriteStream('mongo_backups/classes2.json');
         classesStream.write(JSON.stringify(allClasses));
         classesStream.end("\n");
         let orderStream = fs.createWriteStream('mongo_backups/orders2.json');
         orderStream.write(JSON.stringify(allOrders));
         orderStream.end("\n");
-  
+
         let institutionsStream = fs.createWriteStream('mongo_backups/institutions2.json');
         institutionsStream.write(JSON.stringify(institutions));
         institutionsStream.end("\n");
       }
-     
-
-
-    });
-  
-    await database.sequelize.transaction(async function (t) {  
       await mergeCoupons(allClasses,institutions, allOrders, allUsers,
         shareCouponInstances, shareCouponInstanceObtains, coupons, database, t);
     });
-
   };
   return f();
 }

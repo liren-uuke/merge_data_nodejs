@@ -30,6 +30,9 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
   for(let index = 0 ; index < studentClassInstances.length; index++){
     let sci = studentClassInstances[index];
     let student = users.find(u=>u._id == sci.studentId);
+    if(!student){
+      continue;
+    }
     let order = orders.find(o=>o.studentId==sci.studentId);
 
     sci.order = order;
