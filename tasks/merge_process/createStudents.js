@@ -20,25 +20,46 @@ async function createStudents(users, database, transaction){
             }, {transaction});
         }
         user.studentId = erpStudentAccount.dataValues.id;
-        
-        let erpStudent = await database.student.findOne({
+        let studentNum = i.toString(10);
+        let str0 = "000000";
+        studentNum = str0.substr(0, 6-studentNum.length) + studentNum;
+
+        let erpStudent = await database.student.findCreateFind({
             where: {mobile: user.account.phone, system: 1} ,
-            transaction 
-        });
-        if(!erpStudent){
-            let studentNum = i.toString(10);
-            let str0 = "000000";
-            studentNum = str0.substr(0, 6-studentNum.length) + studentNum;
-            console.log(user.portrait);
-            erpStudent = await database.student.create({
+            defaults:{
                 mobile:user.account.phone,
                 name:user.realname?user.realname:user.name,
                 status:0,
                 avatar: user.portrait?user.portrait:'',
                 number: 'WX1709' + studentNum,
                 system: 1,
-            }, {transaction});
-        }
+            },
+            transaction 
+        });
+        erpStudent = erpStudent[0];
+        
+        await database.student.update(
+            {
+                mobile:user.account.phone,
+                name:user.realname?user.realname:user.name,
+                status:0,
+                avatar: user.portrait?user.portrait:'',
+                number: 'WX1709' + studentNum,
+                system: 1,
+            },
+            {where: {id: erpStudent.dataValues.id} ,transaction}
+        )
+        await database.student.findCreateFind({
+            where: {mobile: user.account.phone, system: 0} ,
+            defaults:{
+                mobile:user.account.phone,
+                name:user.realname?user.realname:user.name,
+                status:0,
+                avatar: user.portrait?user.portrait:'',
+                system: 0,
+            },
+            transaction 
+        });
         user.studentId = erpStudentAccount.dataValues.id;
 
         let erpstudentWeixin =  await database.student_weixin.findOne({
@@ -56,7 +77,7 @@ async function createStudents(users, database, transaction){
             await database.student_weixin.update(
                 {
                     open_id: user.wechatopenId, 
-                    union_id: user.unionid
+                    union_id: user.unionid,
                 },
                 {
                     where: {mobile: user.account.phone, wechat_key: 'ZHIMO'} ,

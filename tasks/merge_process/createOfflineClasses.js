@@ -13,7 +13,7 @@ async function createOfflineClasses(institutionId, offlineCourses, database,tran
                 name: cls.name,
                 institution_id: institutionId              
             },
-            default:{
+            defaults:{
                 name: cls.name,
                 grade_id:17,
                 lesson_count: 0,

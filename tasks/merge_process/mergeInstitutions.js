@@ -15,7 +15,8 @@ async function createInstitution(institution, user, erpUser, database, transacti
   let erpInstitution = {};
   let erpInstObject = {
     open_code: `WX${erpUser.id}`,
-    name: institution.name,
+    name: '网校_'+institution.name,
+    name_wx: institution.name,
     member_count: 1,
     research_revenue_proportion: 500,
     platform_revenue_proportion: 2850,
@@ -89,11 +90,6 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
           open_code: 'wx' + erpUser.dataValues.id,
         },{transaction});
 
-        await database.teacher_qualification.create({
-          user_id: erpUser.dataValues.id, 
-          description:user.intro, 
-        },{transaction});
-
         await database.teacher_grade.create({
           user_id: erpUser.dataValues.id, 
           grade_id:1, 
@@ -106,6 +102,21 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         stream.write(`${user.name}(${user.realname}),${user.account.phone},${institution.name}\n`)
         console.log(`${user.account.phone}erp中无用户${JSON.stringify(user)}${JSON.stringify(institution)}`);
       }
+      await database.teacher_qualification.findCreateFind({
+        where: {user_id: erpUser.dataValues.id},
+        defaults: {
+          user_id: erpUser.dataValues.id, 
+          description_wx:user.intro,
+        },
+        transaction
+      });
+      await database.teacher_qualification.update(
+        {
+          user_id: erpUser.dataValues.id, 
+          description_wx:user.intro,
+        },
+        {where: {user_id: erpUser.dataValues.id}, transaction}
+      );
       institution.erpUsers.push(erpUser);
       const {id} = erpUser.dataValues;
       let institutionMember = await database.institution_member.findOne({
@@ -137,6 +148,21 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         await creatRole(erpInstitution.dataValues.id, id, database, transaction);
         
       }
+      await database.institution.update( 
+        {
+          name_wx: institution.name,
+          share_image: institution.shareSettings&&institution.shareSettings.image?institution.shareSettings.image:null,
+          share_description: institution.shareSettings&&institution.shareSettings.description?institution.shareSettings.description:null,
+          share_title: institution.shareSettings&&institution.shareSettings.title?institution.shareSettings.title:null,
+          introduction: institution.introduction,
+          banner: institution.channelBanner,
+          is_del: 0
+        }, 
+        {
+          where:{id: erpInstitution.dataValues.id},
+          transaction
+        }
+      );
     }
   }
   stream.end('\n'); 

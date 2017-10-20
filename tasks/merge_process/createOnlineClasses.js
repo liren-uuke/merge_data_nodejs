@@ -18,7 +18,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
         //course
         let erpCourse = await database.course.findCreateFind({
             where:{institution_id: institutionId, name: course.name, online_type: 1},
-            default:{ name: course.name,
+            defaults: { name: course.name,
                 grade_id:17,
                 lesson_count: course.steps.length,
                 online_type: 1,
@@ -37,7 +37,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
                     course_id: erpCourse.dataValues.id,
                     is_del: 0  
                 },
-                default: {
+                defaults: {
                     name: step.title,
                     number: index + 1,
                     type: 0,
@@ -62,7 +62,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
                 course_id: erpCourse.id,
                 name: cls.className,
             },
-            default: {
+            defaults: {
                 name: cls.className,
                 grade_id:17,
                 lesson_count: cls.steps.length,
@@ -96,7 +96,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
                     teacher_usr_id: t.dataValues.id,
                     is_del: 0
                 },
-                default: {
+                defaults: {
                     class_id: erpClass.dataValues.id,
                     course_id: erpCourse.id,
                     teacher_usr_id: t.dataValues.id,
@@ -119,7 +119,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
                     class_id: erpClass.dataValues.id,
                     number:index + 1,
                 },
-                default: {
+                defaults: {
                     number:index + 1,
                     class_id: erpClass.dataValues.id,
                     course_id: erpCourse.id,
@@ -142,7 +142,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
                             class_lesson_id: erpLesson.dataValues.id,
                             playback_id: playback.id
                         },
-                        default:{
+                        defaults:{
                             start_time: new Date(playback.startTime * 1000), 
                             end_time: new Date(playback.endTime * 1000), 
                             class_lesson_id: erpLesson.dataValues.id,
