@@ -27,6 +27,22 @@ Date.prototype.format = function(format){
 async function mergeStudentClasses(cls, studentClassInstances,orders, users, database, transaction){
   let erpInstitution = {};
   let erpClass = cls.erpClass;
+  const {id, course_id} = erpClass.dataValues;
+  await database.class_student.update(
+    {
+      is_del: 1,
+    },
+    {where:{class_id: id},transaction}
+  );
+  await database.student_lesson.update(
+    { is_del : 1},
+    {where:{class_id: id},transaction}
+    
+  );
+  await database.purchase_class.update(
+    { is_del : 1},
+    {where:{class_id: id},transaction}    
+  );
   for(let index = 0 ; index < studentClassInstances.length; index++){
     let sci = studentClassInstances[index];
     let student = users.find(u=>u._id == sci.studentId);
@@ -36,8 +52,9 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     let order = orders.find(o=>o.studentId==sci.studentId);
 
     sci.order = order;
-    const {id, course_id} = erpClass.dataValues;
+    let signUpTime = new Date(parseInt(sci.joinTime.$numberLong));
     
+  
     //创建student_class
     let erpClassStudent = await database.class_student.findCreateFind({
       where:{class_id: id, course_id, student_id: student.studentId},
@@ -46,6 +63,14 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     });
 
     erpClassStudent = erpClassStudent[0];
+    
+    await database.class_student.update(
+      {
+        is_del: 0,      
+        create_time:signUpTime
+      },
+      {where: {id: erpClassStudent.dataValues.id}, transaction}
+    );
     let purchaseId = erpClassStudent.dataValues.purchase_id;
     
     //创建订单purchase_info

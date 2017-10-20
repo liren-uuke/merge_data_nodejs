@@ -19,7 +19,6 @@ async function createStudents(users, database, transaction){
                 password: user.account.passwd,
             }, {transaction});
         }
-        user.studentId = erpStudentAccount.dataValues.id;
         let studentNum = i.toString(10);
         let str0 = "000000";
         studentNum = str0.substr(0, 6-studentNum.length) + studentNum;
@@ -30,7 +29,7 @@ async function createStudents(users, database, transaction){
                 mobile:user.account.phone,
                 name:user.realname?user.realname:user.name,
                 status:0,
-                avatar: user.portrait?user.portrait:'',
+                avatar: user.portrait?user.portrait:'http://www.uuke.co:8100/php/default/wx/User.png',
                 number: 'WX1709' + studentNum,
                 system: 1,
             },
@@ -43,7 +42,7 @@ async function createStudents(users, database, transaction){
                 mobile:user.account.phone,
                 name:user.realname?user.realname:user.name,
                 status:0,
-                avatar: user.portrait?user.portrait:'',
+                avatar: user.portrait?user.portrait:'http://www.uuke.co:8100/php/default/wx/User.png',
                 number: 'WX1709' + studentNum,
                 system: 1,
             },
@@ -55,12 +54,12 @@ async function createStudents(users, database, transaction){
                 mobile:user.account.phone,
                 name:user.realname?user.realname:user.name,
                 status:0,
-                avatar: user.portrait?user.portrait:'',
+                avatar: user.portrait?user.portrait:'http://www.uuke.co:8100/php/default/wx/User.png',
                 system: 0,
             },
             transaction 
         });
-        user.studentId = erpStudentAccount.dataValues.id;
+        user.studentId = erpStudent.dataValues.id;
 
         let erpstudentWeixin =  await database.student_weixin.findOne({
             where: {mobile: user.account.phone, wechat_key: 'ZHIMO'} ,
