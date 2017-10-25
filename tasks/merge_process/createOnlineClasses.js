@@ -3,6 +3,10 @@ const sequelize = require('sequelize');
 const _ = sequelize.Utils._;
 
 async function createOnlineClasses(institutionId, openCode, teachers, classes, courses, database,transaction){
+    
+
+    let classNginx = '';
+
     let mobiles = teachers.map(te=>te.account.phone);    
     let erpUsers = await database.user.findAll({
         where: {mobile : { in : mobiles }},
@@ -50,7 +54,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
     } 
     for(let i = 0 ; i < classes.length; i++){
         let cls = classes[i];
-        
+
         let erpCourse = erpCourses.find(c=>c.mongoId == cls.courseId);
         let strOpenCode = i.toString(10);
         let str0 = "000000";
@@ -86,7 +90,10 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
         erpClass = erpClass[0];
         cls.erpClass = erpClass;
         let erpClassTeachers = erpUsers.filter(u=>cls.teacherIds.find(id=>id==u.dataValues.mongoId));
-        
+        classNginx += `        if ($class_id = ${cls._id}) {
+            return 301 /wechat/institution/${institutionId}/class/${erpClass.dataValues.id};
+        }\n`;
+
         //class_teacher
         await async.map(erpClassTeachers, t=>{
             database.class_teacher.findCreateFind({
@@ -154,6 +161,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
             }
         };
     };
+    return classNginx;
 }
 
 module.exports = function(institutionId, openCode, teachers, classes, courses, database, t){

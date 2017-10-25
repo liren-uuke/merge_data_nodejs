@@ -7,6 +7,7 @@ const mergeInstitutions = require('./merge_process/mergeInstitutions')
 const mergeStudentClasses = require('./merge_process/mergeStudentClasses')
 const mergeCoupons = require('./merge_process/mergeCoupons')
 const createOfflineClasses = require('./merge_process/createOfflineClasses')
+const mapMobile = require('./merge_process/mapMobile')
 
 
 
@@ -16,19 +17,8 @@ function getCollection(name){
   var file=`./mongo_backups/${name}.json`;
   return JSON.parse(fs.readFileSync(file, 'utf-8'));
 }
-function mobileMap(mobile){
-  if('15000000001' == mobile){
-    return '13524476369';
-  }
-  if('15000000006' == mobile){
-    return '18918138572';
-  }
-  if('18930998393' == mobile){
-    return '13774378722';
-  }
-    
-  return mobile;
-}
+
+
 function processData(database){
   var f = async function () {
     let stream = fs.createWriteStream('all.log');
@@ -36,7 +26,7 @@ function processData(database){
     let institutions = getCollection('institutions');
     let allUsers = getCollection('users');
     //allUsers = allUsers.filter(u=>u.account.phone&&u.account.phone.length>0);
-    allUsers.forEach(u=>u.account.phone = u.account.phone?mobileMap(u.account.phone):null);
+    allUsers.forEach(u=>u.account.phone = u.account.phone?mapMobile(u.account.phone):null);
     let allClasses = getCollection('classes');
     let allcourses = getCollection('courses');
     let allStudentClassInstances = getCollection('studentClassInstances');

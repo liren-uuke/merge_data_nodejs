@@ -60,6 +60,10 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
   let stream = fs.createWriteStream('cannotFindUsers.csv');
   let streamInst = fs.createWriteStream('instituionConflict.csv');
   let streamMulti = fs.createWriteStream('streamMulti.csv');
+  
+  let homeNginx = '    location ~* ^/wechat/institution/(?<institution_id>.+?)/home {\n';
+  
+
   for(let index = 0 ; index < institutions.length; index++){
     let institution = institutions[index];
     institution.erpUsers = [];
@@ -164,10 +168,20 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         }
       );
     }
+    homeNginx = homeNginx  + 
+    `        if ($institution_id = ${institution._id}) {
+            return 301 /wechat/institution/${institution.erpInstitution.dataValues.id}/home;
+        }\n`;
   }
+  homeNginx = homeNginx+ `root /mnt/deploy/wx-client-react/client;
+        try_files $uri /wechat/index.html;
+    }\n`
+
+  
   stream.end('\n'); 
   streamInst.end('\n'); 
   streamMulti.end('\n');
+  return homeNginx;
 }
 
 module.exports = mergeInstitutions;
