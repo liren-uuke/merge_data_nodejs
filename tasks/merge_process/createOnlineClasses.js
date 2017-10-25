@@ -64,7 +64,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
             where: {                 
                 institution_id: institutionId,
                 course_id: erpCourse.id,
-                name: cls.className,
+                live_channel_id:cls.liveChannelId
             },
             defaults: {
                 name: cls.className,
@@ -79,6 +79,7 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
                 max_students: cls.upperLimit,
                 lesson_count: cls.steps.length,
                 live_channel_id : cls.liveChannelId,
+                live_password: cls.livePassword,
                 introduction: cls.classIntro,
                 cover: cls.classCover,
                 valid_date: new Date(cls.validDate * 1000),
@@ -88,6 +89,29 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
             transaction
         });
         erpClass = erpClass[0];
+        await database.class_info.update(
+            {
+                name: cls.className,
+                grade_id:17,
+                lesson_count: cls.steps.length,
+                online_type: 1,
+                institution_id: institutionId,
+                status: cls.status == 0 ? 1 : cls.status == 1 ? 0 : 2 ,
+                course_id: erpCourse.id,
+                open_code: strOpenCode,
+                price: cls.classTuition * 100,
+                max_students: cls.upperLimit,
+                lesson_count: cls.steps.length,
+                live_channel_id : cls.liveChannelId,
+                live_password: cls.livePassword,
+                introduction: cls.classIntro,
+                cover: cls.classCover,
+                valid_date: new Date(cls.validDate * 1000),
+                begin_date: new Date(cls.beginDate * 1000),
+                on_shelves_time: new Date(parseInt(cls.onShelvesDate.$numberLong)),
+            },
+            {where: {id: erpClass.dataValues.id}, transaction}
+        );
         cls.erpClass = erpClass;
         let erpClassTeachers = erpUsers.filter(u=>cls.teacherIds.find(id=>id==u.dataValues.mongoId));
         classNginx += `        if ($class_id = ${cls._id}) {
