@@ -170,7 +170,7 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
     }
     homeNginx = homeNginx  + 
     `        if ($institution_id = ${institution._id}) {
-            return 301 /wechat/institution/${institution.erpInstitution.dataValues.id}/home;
+            return 301 /wechat/institution/${erpInstitution.dataValues.id}/home;
         }\n`;
   }
   homeNginx = homeNginx+ `root /mnt/deploy/wx-client-react/client;
