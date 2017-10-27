@@ -20,6 +20,8 @@
     "md5": "^2.2.1",
     "moment": "^2.18.1",
     "mysql2": "^1.4.2",
+    "promise": "^8.0.1",
+    "request": "^2.83.0",
     "sequelize": "^4.8.0"
   },
   "devDependencies": {
