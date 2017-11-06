@@ -11,10 +11,10 @@ async function creatRole(institutionId, userId, database, transaction){
     transaction
   });
 }  
-async function createInstitution(institution, user, erpUser, database, transaction){
+async function createInstitution(institution, user, erpUser, openCode, database, transaction){
   let erpInstitution = {};
   let erpInstObject = {
-    open_code: `WX${erpUser.id}`,
+    open_code: `WX${openCode}`,
     name: '网校_'+institution.name,
     name_wx: institution.name,
     member_count: 1,
@@ -62,7 +62,7 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
   let streamMulti = fs.createWriteStream('streamMulti.csv');
   
   let homeNginx = '    location ~* ^/wechat/institution/(?<institution_id>.+?)/home {\n';
-  
+  let openCode = 1;
 
   for(let index = 0 ; index < institutions.length; index++){
     let institution = institutions[index];
@@ -85,7 +85,7 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         erpUser = await database.user.create({
             mobile, 
             name, 
-            password:'14e1b600b1fd579f47433b88e8d85291'
+            password: user.account.passwd
         },{transaction});
         
         await database.teacher.create({
@@ -129,7 +129,8 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
       });
       if(!institutionMember){
         if(!erpInstitution){
-          erpInstitution = await createInstitution(institution, user, erpUser, database, transaction); 
+          erpInstitution = await createInstitution(institution, user, erpUser, openCode,database, transaction); 
+          openCode += 1;
           institution.erpInstitution = erpInstitution;
         }else{
           await createInstitutionMember(erpInstitution, erpUser, database, transaction); 

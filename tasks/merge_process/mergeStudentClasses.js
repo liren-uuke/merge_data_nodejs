@@ -110,7 +110,11 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
       transaction
     });
     await database.purchase_class.update(
-      { is_del : 0, purchase_id:purchaseId},
+      { 
+        is_del : 0, 
+        purchase_id:purchaseId,
+        status:1
+      },
       {
         where:{id: puchaseClass[0].dataValues.id},
         transaction

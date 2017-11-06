@@ -46,7 +46,9 @@ const models = [
   'student_coupon_shared',
   'teacher_qualification',
   'teacher_grade',
-  'teacher_subject'
+  'teacher_subject',
+  'teacher_subject',
+  'wechat_user_info'  
   
 ];
 
