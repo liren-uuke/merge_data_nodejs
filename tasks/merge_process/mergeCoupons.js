@@ -25,6 +25,11 @@ Date.prototype.format = function(format){
   return format; 
 } 
 async function mergeCoupons(classes, institutions, orders, students,                shareCouponInstances, shareCouponInstanceObtains, coupons, database, transaction){
+  await database.student_coupon_obtained.update(
+    { is_del : 1},
+    {where:{used_purchase_id: 0},transaction}
+    
+  );
   for(let index = 0 ; index < coupons.length; index++){
     let coupon = coupons[index];
     let institution = institutions.find(ins=>ins._id==coupon.institutionId);
@@ -32,6 +37,7 @@ async function mergeCoupons(classes, institutions, orders, students,            
     if(!erpInstitution){
       continue;
     }
+    
     erpCoupon = await database.coupon.findCreateFind({
       where: {institution_id: erpInstitution.dataValues.id},
       defaults: {institution_id: erpInstitution.dataValues.id}.
@@ -96,7 +102,7 @@ async function mergeCoupons(classes, institutions, orders, students,            
         create_time: new Date(parseInt(sharedCoupon.shareTime.$numberLong)),
       },
       {
-        where:{id: erpSharedCoupon.id},
+        where:{id: erpSharedCoupon.dataValues.id},
         transaction
       }
     );    
@@ -121,6 +127,7 @@ async function mergeCoupons(classes, institutions, orders, students,            
     }
     let erpPurchaseInfo = order.erpPurchaseInfo;
     if(!erpPurchaseInfo){
+      console.log(order);
       continue;
     }
     if(erpPurchaseInfo.dataValues){
@@ -135,6 +142,9 @@ async function mergeCoupons(classes, institutions, orders, students,            
     console.log(obtainedCoupon);
     
     let obtainedStudent = students.find(s=> s._id === obtainedCoupon.obtainerUserId);
+    if(!obtainedStudent.unionid){
+      continue;
+    }    
     let data=  {
       purchase_id: erpPurchaseInfo.id,
       coupon_id: coupon.couponId,
@@ -156,6 +166,7 @@ async function mergeCoupons(classes, institutions, orders, students,            
         money: obtainedCoupon.money*100,
         title: obtainedCoupon.title,
         institution_id: erpInstitution.dataValues.id,
+        is_del: 0
 
       },
       {
