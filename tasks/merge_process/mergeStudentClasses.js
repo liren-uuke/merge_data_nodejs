@@ -28,28 +28,34 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
   let erpInstitution = {};
   let erpClass = cls.erpClass;
   const {id, course_id} = erpClass.dataValues;
-  await database.class_student.update(
-    {
-      is_del: 1,
-    },
-    {where:{class_id: id},transaction}
-  );
-  await database.student_lesson.update(
-    { is_del : 1},
-    {where:{class_id: id},transaction}
-    
-  );
-  await database.purchase_class.update(
-    { is_del : 1},
-    {where:{class_id: id},transaction}    
-  );
+  if(!(studentClassInstances.length==1 && studentClassInstances[0].isDel)){
+
+    await database.class_student.update(
+      {
+        is_del: 1,
+      },
+      {where:{class_id: id},transaction}
+    );
+    await database.student_lesson.update(
+      { is_del : 1},
+      {where:{class_id: id},transaction}
+      
+    );
+    await database.purchase_class.update(
+      { is_del : 1},
+      {where:{class_id: id},transaction}    
+    );
+  }
+ 
   for(let index = 0 ; index < studentClassInstances.length; index++){
     let sci = studentClassInstances[index];
     let student = users.find(u=>u._id == sci.studentId);
     if(!student){
       continue;
     }
-    let order = orders.find(o=>o.studentId==sci.studentId);
+    let order = (studentClassInstances.length==1 && studentClassInstances[0].isDel)
+    ?orders[0]
+    :orders.find(o=>o.studentId==sci.studentId&&o.inTradeNo!='4005862001201707232235131821');
 
     sci.order = order;
     let signUpTime = new Date(parseInt(sci.joinTime.$numberLong));
@@ -91,9 +97,8 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
       erpPurchaseInfo = erpPurchaseInfo[0];
       erpPurchaseInfo.dataValues.purchase_number = "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000;
       purchaseId = erpPurchaseInfo.dataValues.id;
-      if(order){
-        order.erpPurchaseInfo = erpPurchaseInfo;
-      }
+      //console.log("new");
+      //console.log(erpPurchaseInfo);
     }
     else{
       erpPurchaseInfo = await database.purchase_info.findCreateFind({
@@ -113,11 +118,15 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
       erpPurchaseInfo = erpPurchaseInfo[0];
       erpPurchaseInfo.dataValues.purchase_number = "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000;
       
+      //console.log(erpPurchaseInfo);
       
+    }
+    if(order){
+      order.erpPurchaseInfo = erpPurchaseInfo;
     }
     await database.class_student.update(
       {
-        is_del: 0,      
+        is_del: sci.isDel?1:0,      
         create_time:signUpTime,
         purchase_id:purchaseId
       },
@@ -127,7 +136,9 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
       { 
         is_del : 0, 
         purchase_number: erpPurchaseInfo.dataValues.purchase_number,
-        pay_time: payTime,        
+        pay_time: payTime,    
+        trade_no: order ? order.inTradeNo : '',    
+        total_price:  order ? Math.round(order.price)*100 : 0,        
         status: 1,
       },
       {
@@ -144,7 +155,7 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     });
     await database.purchase_class.update(
       { 
-        is_del : 0, 
+        is_del : sci.isDel?1:0, 
         purchase_id:purchaseId,
         status:1
       },
@@ -153,8 +164,34 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
         transaction
       }
     );
+      
+    if(sci.isDel){
+      /*let ref = await database.student_refund.findCreateFind({
+        where:{purchase_id: purchaseId, student_id: student.studentId},
+        defaults:{
+          purchase_id: purchaseId, 
+          purchase_number:erpPurchaseInfo.dataValues.purchase_number, 
+          student_id: student.studentId,
+          money:  Math.round(order.price)*100
+        },
+        transaction
+      });
+      await database.student_refund.update(
+        { 
+          purchase_id: purchaseId, 
+          purchase_number:erpPurchaseInfo.dataValues.purchase_number, 
+          student_id: student.studentId,
+          money:  Math.round(order.price)*100,
+          status:3
 
-    
+        },
+        {
+          where:{id: ref[0].dataValues.id},
+          transaction
+        }
+      );*/
+    }
+   
     //创建class_lesson
     for(let i = 0; i < cls.classLessons.length; i++){
       let lesson = cls.classLessons[i];

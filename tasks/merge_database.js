@@ -6,6 +6,7 @@ const createStudents = require('./merge_process/createStudents')
 const mergeInstitutions = require('./merge_process/mergeInstitutions')
 const mergeStudentClasses = require('./merge_process/mergeStudentClasses')
 const mergeCoupons = require('./merge_process/mergeCoupons')
+const mergeOrders = require('./merge_process/mergeOrders')
 const createOfflineClasses = require('./merge_process/createOfflineClasses')
 const mergeWechatInfo = require('./merge_process/mergeWechatInfo')
 const mapMobile = require('./merge_process/mapMobile')
@@ -103,6 +104,7 @@ function processData(database){
         institutionsStream.write(JSON.stringify(institutions));
         institutionsStream.end("\n");
       }
+      await mergeOrders(allClasses,institutions, allOrders, allUsers, database, t);
       await mergeCoupons(allClasses,institutions, allOrders, allUsers,
         shareCouponInstances, shareCouponInstanceObtains, coupons, database, t);
       await mergeWechatInfo(allUsers, database, t);

@@ -127,7 +127,6 @@ async function mergeCoupons(classes, institutions, orders, students,            
     }
     let erpPurchaseInfo = order.erpPurchaseInfo;
     if(!erpPurchaseInfo){
-      console.log(order);
       continue;
     }
     if(erpPurchaseInfo.dataValues){
@@ -139,7 +138,6 @@ async function mergeCoupons(classes, institutions, orders, students,            
       usedErpPurchaseInfo = usedErpPurchaseInfo.dataValues;
     }
 
-    console.log(obtainedCoupon);
     
     let obtainedStudent = students.find(s=> s._id === obtainedCoupon.obtainerUserId);
     if(!obtainedStudent.unionid){
@@ -163,11 +161,11 @@ async function mergeCoupons(classes, institutions, orders, students,            
         expire_time: new Date(parseInt(obtainedCoupon.expireTime.$numberLong)),
         use_time: coupon.useTime?new Date(parseInt(obtainedCoupon.useTime.$numberLong)):null,
         used_purchase_id: usedErpPurchaseInfo?usedErpPurchaseInfo.id : 0,
-        money: obtainedCoupon.money*100,
+        money: obtainedCoupon.money * 100,
         title: obtainedCoupon.title,
         institution_id: erpInstitution.dataValues.id,
+        class_id: classId,
         is_del: 0
-
       },
       {
         where:{id: erpObtainedCoupon.dataValues.id},
