@@ -92,6 +92,7 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
           user_id: erpUser.dataValues.id, 
           nick_name:name, 
           open_code: 'wx' + erpUser.dataValues.id,
+
         },{transaction});
 
         await database.teacher_grade.create({
@@ -114,6 +115,10 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         },
         transaction
       });
+      await database.teacher.update(
+        {avatar: user.portrait},
+        {where: {user_id: erpUser.dataValues.id}, transaction}
+      );
       await database.teacher_qualification.update(
         {
           user_id: erpUser.dataValues.id, 
