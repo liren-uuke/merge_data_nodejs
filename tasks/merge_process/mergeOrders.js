@@ -27,13 +27,20 @@ Date.prototype.format = function(format){
   return format; 
 } 
 async function mergeOrders(classes, institutions, orders, students, database, transaction){
-
+  let stream = fs.createWriteStream('orders.log');
+  
   for(let index = 0 ; index < orders.length; index++){
     let order = orders[index];
-
     if(order.erpPurchaseInfo || order.institutionId==''){
+      
+      if(order.erpPurchaseInfo &&order.erpPurchaseInfo.dataValues && order.erpPurchaseInfo.dataValues.id == 218838){
+        stream.write(JSON.stringify(order));
+        stream.end("\n");
+      }
       continue;
     }
+
+    
     let institution = institutions.find(inst=>inst._id==order.institutionId);
     let cls = classes.find(c=>c._id==order.classId);
     if(!cls){
@@ -75,7 +82,10 @@ async function mergeOrders(classes, institutions, orders, students, database, tr
       isDel:true
     }],[order]
     ,students,database, transaction);
-  
+    if(order.erpPurchaseInfo && order.erpPurchaseInfo.dataValues.id == 218838){
+      stream.write(JSON.stringify(order));
+      stream.end("\n");
+    }
   }
   let refunds = [
     '4009012001201707232231041667',

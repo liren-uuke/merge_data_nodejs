@@ -34,11 +34,6 @@ async function createInstitution(institution, user, erpUser, openCode, database,
   
   let  institutionId = erpInstitution.dataValues.id;
   let  userId = erpUser.dataValues.id;
-  await database.user_role.create({
-    user_id: userId,
-    role_id: WXROLE,
-    instituion_id: institutionId
-  }, {transaction});
   let instituonMember = await database.institution_member.create({
     institution_id: institutionId,
     user_id: userId
@@ -132,6 +127,7 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         where: {user_id: id} ,
         transaction
       });
+      
       if(!institutionMember){
         if(!erpInstitution){
           erpInstitution = await createInstitution(institution, user, erpUser, openCode,database, transaction); 
@@ -158,6 +154,19 @@ async function mergeInstitutions(institutions, allUsers, database, transaction){
         await creatRole(erpInstitution.dataValues.id, id, database, transaction);
         
       }
+      await database.user_role.findCreateFind({
+        where: {
+          user_id: id,
+          role_id: WXROLE,
+          //instituion_id:  erpInstitution.dataValues.id
+        },
+        defaults: {
+          user_id: id,
+          role_id: WXROLE,
+          //instituion_id:  erpInstitution.dataValues.id
+        },
+        transaction  
+      });
       await database.institution.update( 
         {
           name_wx: institution.name,

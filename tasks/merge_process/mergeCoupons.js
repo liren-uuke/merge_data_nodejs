@@ -159,7 +159,7 @@ async function mergeCoupons(classes, institutions, orders, students,            
       {
         obtain_time: new Date(parseInt(obtainedCoupon.obtainTime.$numberLong)),
         expire_time: new Date(parseInt(obtainedCoupon.expireTime.$numberLong)),
-        use_time: coupon.useTime?new Date(parseInt(obtainedCoupon.useTime.$numberLong)):null,
+        use_time: obtainedCoupon.useTime?new Date(parseInt(obtainedCoupon.useTime.$numberLong)):null,
         used_purchase_id: usedErpPurchaseInfo?usedErpPurchaseInfo.id : 0,
         money: obtainedCoupon.money * 100,
         title: obtainedCoupon.title,

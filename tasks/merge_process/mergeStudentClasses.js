@@ -28,7 +28,8 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
   let erpInstitution = {};
   let erpClass = cls.erpClass;
   const {id, course_id} = erpClass.dataValues;
-  if(!(studentClassInstances.length==1 && studentClassInstances[0].isDel)){
+  let processDel = studentClassInstances.length==1 && studentClassInstances[0].isDel;
+  if(!processDel){
 
     await database.class_student.update(
       {
@@ -51,16 +52,16 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     let sci = studentClassInstances[index];
     let student = users.find(u=>u._id == sci.studentId);
     if(!student){
+      console.log(sci);
       continue;
     }
-    let order = (studentClassInstances.length==1 && studentClassInstances[0].isDel)
+    let order = processDel
     ?orders[0]
     :orders.find(o=>o.studentId==sci.studentId&&o.inTradeNo!='4005862001201707232235131821');
 
     sci.order = order;
     let signUpTime = new Date(parseInt(sci.joinTime.$numberLong));
     
-  
     //创建student_class
     let erpClassStudent = await database.class_student.findCreateFind({
       where:{class_id: id, course_id, student_id: student.studentId},
@@ -73,54 +74,31 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     let purchaseId = erpClassStudent.dataValues.purchase_id;
     
     //创建订单purchase_info
+    
     let paytimeInt = order?parseInt(order.tradeTime.$numberLong):0;
+    
     let payTime = order?new Date(paytimeInt):signUpTime;
-    let erpPurchas;eInfo = null
-    if(purchaseId == 0){
-      erpPurchaseInfo = await database.purchase_info.findCreateFind({
-        where:{
-          teach_point_id:0,
-          pay_time: payTime,
-          trade_no: order ? order.inTradeNo : '', 
-          student_id: student.studentId, 
-        },
-        defaults:{
-          student_id: student.studentId,
-          trade_no: order ? order.inTradeNo : '',
-          status: 1,
-          pay_channel: 4,
-          total_price:  order ? Math.round(order.price)*100 : 0,
-          pay_time: payTime,
-        },
-        transaction
-      });
-      erpPurchaseInfo = erpPurchaseInfo[0];
-      erpPurchaseInfo.dataValues.purchase_number = "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000;
-      purchaseId = erpPurchaseInfo.dataValues.id;
-      //console.log("new");
-      //console.log(erpPurchaseInfo);
-    }
-    else{
-      erpPurchaseInfo = await database.purchase_info.findCreateFind({
-        where:{
-          id: purchaseId,
-        },
-        defaults:{
-          student_id: student.studentId,
-          trade_no: order ? order.inTradeNo : '',
-          status: 1,
-          pay_channel: 4,
-          total_price:  order ? Math.round(order.price)*100 : 0,
-          pay_time: payTime,
-        },
-        transaction
-      });
-      erpPurchaseInfo = erpPurchaseInfo[0];
-      erpPurchaseInfo.dataValues.purchase_number = "1"+payTime.format("yyyyMMddhhmm")+erpPurchaseInfo.dataValues.id%1000000;
-      
-      //console.log(erpPurchaseInfo);
-      
-    }
+    
+    let erpPurchaseInfo = null
+    let purchaseNumber =  order ? order.outTradeNo : 'noorder_'+sci._id.$oid;
+    erpPurchaseInfo = await database.purchase_info.findCreateFind({
+      where:{
+        purchase_number: purchaseNumber,
+      },
+      defaults:{
+        student_id: student.studentId,
+        trade_no: order ? order.inTradeNo : '',
+        status: 1,
+        pay_channel: 4,
+        total_price:  order ? Math.round(order.price)*100 : 0,
+        pay_time: payTime,
+        online_type:1
+      },
+      transaction
+    });
+    erpPurchaseInfo = erpPurchaseInfo[0];
+    purchaseId = erpPurchaseInfo.dataValues.id;
+    
     if(order){
       order.erpPurchaseInfo = erpPurchaseInfo;
     }
@@ -135,29 +113,38 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     await database.purchase_info.update(
       { 
         is_del : 0, 
-        purchase_number: erpPurchaseInfo.dataValues.purchase_number,
+        purchase_number: purchaseNumber,
         pay_time: payTime,    
         trade_no: order ? order.inTradeNo : '',    
-        total_price:  order ? Math.round(order.price)*100 : 0,        
+        total_price:  order ? Math.round(order.price)*100 : 0,    
+        online_type:1,    
         status: 1,
+        pay_channel: 4,
+        
+        student_id: student.studentId,
+        
       },
       {
-        where:{id: erpPurchaseInfo.dataValues.id},
+        where:{id: purchaseId},
         transaction
       }
     );
    
     //创建puchase_class
     let puchaseClass = await database.purchase_class.findCreateFind({
-      where:{class_id: id, course_id, student_id: student.studentId},
-      defaults:{class_id: id, course_id, student_id: student.studentId},
+      where:{purchase_id: purchaseId},
+      defaults:{class_id: id, course_id, student_id: student.studentId, purchase_id:purchaseId},
       transaction
     });
     await database.purchase_class.update(
       { 
         is_del : sci.isDel?1:0, 
         purchase_id:purchaseId,
-        status:1
+        status:1,
+        class_id: id, 
+        course_id, 
+        student_id: student.studentId,
+        purchase_number: purchaseNumber
       },
       {
         where:{id: puchaseClass[0].dataValues.id},
