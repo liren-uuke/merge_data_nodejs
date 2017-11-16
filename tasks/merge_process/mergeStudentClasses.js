@@ -64,8 +64,8 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     
     //创建student_class
     let erpClassStudent = await database.class_student.findCreateFind({
-      where:{class_id: id, course_id, student_id: student.studentId},
-      defaults:{class_id: id, course_id, student_id: student.studentId},
+      where:{class_id: id, student_id: student.studentId},
+      defaults:{class_id: id, student_id: student.studentId},
       transaction
     });
 
@@ -89,9 +89,6 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
         student_id: student.studentId,
         trade_no: order ? order.inTradeNo : '',
         status: 1,
-        pay_channel: 4,
-        total_price:  order ? Math.round(order.price)*100 : 0,
-        pay_time: payTime,
         online_type:1
       },
       transaction
@@ -106,7 +103,8 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
       {
         is_del: sci.isDel?1:0,      
         create_time:signUpTime,
-        purchase_id:purchaseId
+        purchase_id:purchaseId,
+        course_id
       },
       {where: {id: erpClassStudent.dataValues.id}, transaction}
     );
@@ -119,7 +117,7 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
         total_price:  order ? Math.round(order.price)*100 : 0,    
         online_type:1,    
         status: 1,
-        pay_channel: 4,
+        pay_channel: order?4:1,
         
         student_id: student.studentId,
         
@@ -185,7 +183,6 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
       let sl = await database.student_lesson.findCreateFind({
         where:{class_id: id, course_id, student_id: student.studentId, lesson_id:lesson.dataValues.id},
         defaults:{class_id: id, course_id, student_id: student.studentId, lesson_id:lesson.dataValues.id},
-        
         transaction
       });      
       await database.student_lesson.update(
@@ -195,6 +192,7 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
           transaction
         }
       );
+      console.log(lesson);
     }
   }
 }

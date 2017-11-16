@@ -63,7 +63,6 @@ async function createOnlineClasses(institutionId, openCode, teachers, classes, c
         let erpClass= await database.class_info.findCreateFind({
             where: {                 
                 institution_id: institutionId,
-                course_id: erpCourse.id,
                 live_channel_id:cls.liveChannelId
             },
             defaults: {
