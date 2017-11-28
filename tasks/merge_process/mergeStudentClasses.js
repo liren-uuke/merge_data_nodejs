@@ -180,9 +180,16 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
     //创建class_lesson
     for(let i = 0; i < cls.classLessons.length; i++){
       let lesson = cls.classLessons[i];
+      let data = {
+        class_id: id, 
+        course_id, 
+        student_id: student.studentId, 
+        lesson_id:lesson.dataValues.id,
+        purchase_id:purchaseId
+      }
       let sl = await database.student_lesson.findCreateFind({
-        where:{class_id: id, course_id, student_id: student.studentId, lesson_id:lesson.dataValues.id},
-        defaults:{class_id: id, course_id, student_id: student.studentId, lesson_id:lesson.dataValues.id},
+        where: data,
+        defaults: data,
         transaction
       });      
       await database.student_lesson.update(
@@ -192,7 +199,7 @@ async function mergeStudentClasses(cls, studentClassInstances,orders, users, dat
           transaction
         }
       );
-      console.log(lesson);
+      //console.log(lesson);
     }
   }
 }

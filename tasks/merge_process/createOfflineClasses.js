@@ -29,6 +29,7 @@ async function createOfflineClasses(institutionId, offlineCourses, database,tran
             },
             transaction
         });
+        offlineCourses.erpClass=erpClass[0];
     };
 }
 

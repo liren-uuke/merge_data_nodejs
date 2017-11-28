@@ -10,6 +10,7 @@ const mergeOrders = require('./merge_process/mergeOrders')
 const createOfflineClasses = require('./merge_process/createOfflineClasses')
 const mergeWechatInfo = require('./merge_process/mergeWechatInfo')
 const mapMobile = require('./merge_process/mapMobile')
+const mergePromote = require('./merge_process/mergePromote')
 
 
 const useCache=false;
@@ -49,7 +50,9 @@ function processData(database){
         }
         let offlines = offlineCourses.filter(o=>o.institutionId==institution._id);
         await createOfflineClasses(institution.erpInstitution.dataValues.id, offlines,database, t);
+        mergePromote(offlines, 2, institution, database, t);
       }
+
   
   
     //创建学生
@@ -85,7 +88,9 @@ function processData(database){
           }
           nginxString += `        root /mnt/deploy/wx-client-react/client;
         try_files $uri /wechat/index.html;
-    }\n`
+    }\n`;
+          mergePromote(classes, 1, institution, database, t);
+
         }
         
 

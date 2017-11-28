@@ -46,7 +46,10 @@ async function mergeCoupons(classes, institutions, orders, students,            
     erpCoupon = erpCoupon[0];
     let classId = 0;
     if(coupon.classId != "all"){
-      let cls = classes.find(c=>c._id===coupon.classId);
+      let cls = classes.find(c=>c._id==coupon.classId);
+      if(!cls){
+        console.log(coupon);
+      }
       classId = cls.erpClass.dataValues?cls.erpClass.dataValues.id:cls.erpClass.id;
     }
     await database.coupon.update(

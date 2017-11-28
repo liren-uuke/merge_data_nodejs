@@ -49,7 +49,8 @@ const models = [
   'teacher_subject',
   'teacher_subject',
   'wechat_user_info',
-  'student_refund'
+  'student_refund',
+  'class_promote'
   
 ];
 

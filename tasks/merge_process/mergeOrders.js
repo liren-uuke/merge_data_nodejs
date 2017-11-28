@@ -42,6 +42,9 @@ async function mergeOrders(classes, institutions, orders, students, database, tr
 
     
     let institution = institutions.find(inst=>inst._id==order.institutionId);
+    if(!institution.erpInstitution){
+      continue;
+    }
     let cls = classes.find(c=>c._id==order.classId);
     if(!cls){
         let erpClass= await database.class_info.findCreateFind({
