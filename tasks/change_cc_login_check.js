@@ -49,7 +49,7 @@ async function roomInfo(roomId){
     barrage: room.barrage.toString(),
     openlowdelaymode: room.openLowDelayMode.toString(),
     showusercount: room.showUserCount.toString(),
-    checkurl: 'https://wx.review.zhimo.co/wxserver/live/logincheck.do'
+    checkurl: 'https://wx.zhimo.co/wxserver/live/logincheck.do'
   }
   query = createHashedQueryString(modifyParams, apiKey);
   
@@ -93,7 +93,7 @@ function getCollection(name){
 
 function processData(database){
   var f = async function () {
-    let allClasses = getCollection('classes').filter(cls=>cls.institutionId=='933161b305ec4599be1c5e1988e512df');
+    let allClasses = getCollection('classes');//.filter(cls=>cls.institutionId=='933161b305ec4599be1c5e1988e512df');
     for(let i = 0 ; i < allClasses.length; i++){
       let cls = allClasses[i];
       console.log(`班级:${cls.className}`); 
